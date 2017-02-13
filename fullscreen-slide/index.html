@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Fullscreen Slider with Mouse scrolling</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+        
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+        
+        body {
+            height: 100vh;
+            overflow: hidden;
+            --transitionTime: .2s;
+            --indicatorBorderWidth: 1px;
+        }
+        
+        .slide-container {
+            width: 100%;
+            height: 100vh;
+            transition: transform var(--transitionTime);
+        }
+        
+        .slide-container .slide-item {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .slide-item {
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .slide-item[data-index="1"] {
+            background: dimgray;
+        }
+        
+        .slide-item[data-index="2"] {
+            background: lightblue;
+        }
+        
+        .slide-item[data-index="3"] {
+            background: lightgreen;
+        }
+        
+        .slide-item[data-index="4"] {
+            background: yellowgreen;
+        }
+        
+        .slide-item[data-index="5"] {
+            background: lightcoral;
+        }
+        
+        .slide-indicator {
+            position: absolute;
+            top: 50%;
+            right: 3em;
+            transform: translateY(-50%);
+            list-style: none;
+        }
+        
+        .slide-indicator li {
+            position: relative;
+            height: 0.6em;
+            width: 0.6em;
+            margin: 1em 0;
+        }
+        
+        .slide-indicator .dot,
+        .slide-indicator .dot-stroke {
+            display: block;
+            border-radius: 50%;
+            position: absolute;
+            transition: transform var(--transitionTime), opacity var(--transitionTime);
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .slide-indicator .dot {
+            opacity: 1;
+            transform: scale(1);
+            background: #fff;
+            background-clip: content-box;
+            border: var(--indicatorBorderWidth) solid transparent;
+        }
+        
+        .slide-indicator .active .dot {
+            opacity: 0;
+            transform: scale(0);
+        }
+        
+        .slide-indicator .dot-stroke {
+            opacity: 0;
+            transform: scale(0);
+            border: var(--indicatorBorderWidth) solid #fff;
+        }
+        
+        .slide-indicator .active .dot-stroke {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+
+<body>
+    <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+    <div class="slide-container">
+        <section class="slide-item" data-index="1"></section>
+        <section class="slide-item" data-index="2"></section>
+        <section class="slide-item" data-index="3"></section>
+        <section class="slide-item" data-index="4"></section>
+        <section class="slide-item" data-index="5"></section>
+    </div>
+    <!-- TODO: auto create indicator? -->
+    <ul class="slide-indicator">
+        <li>
+            <span class="dot"></span>
+            <span class="dot-stroke"></span>
+        </li>
+        <li>
+            <span class="dot"></span>
+            <span class="dot-stroke"></span>
+        </li>
+        <li>
+            <span class="dot"></span>
+            <span class="dot-stroke"></span>
+        </li>
+        <li>
+            <span class="dot"></span>
+            <span class="dot-stroke"></span>
+        </li>
+        <li>
+            <span class="dot"></span>
+            <span class="dot-stroke"></span>
+        </li>
+    </ul>
+    <script src="http://cdn.bootcss.com/lodash-fp/0.10.4/lodash-fp.min.js"></script>
+    <script>
+        const container = document.querySelector('.slide-container');
+        const sliderItems = Array.from(document.querySelectorAll('.slide-item'));
+        let animating = false;
+        let currentIndex = 0;
+        let topOffset = 0;
+
+        // TODO:
+        // - click indicator to navigate the content
+        // - handle different height, delta = target.clientTop - current.clientTop (not real code);
+        // - animation end is not always in transitionend, each content may have it's own transition.
+        const indicators = Array.from(document.querySelectorAll('.slide-indicator li'));
+        indicators[currentIndex].classList.add('active');
+
+        container.addEventListener('transitionend', (e) => {
+            console.log('transition done');
+            animating = false;
+        });
+
+        let scrollHandler = _.debounce(200, (scrollUp) => {
+            if (animating) {
+                console.log('please waiting for the end of transition');
+                return;
+            }
+
+            const nextIndex = currentIndex + (scrollUp ? 1 : -1);
+            const currentItem = sliderItems[currentIndex];
+            const nextItem = sliderItems[nextIndex];
+
+            if (!nextItem) {
+                return;
+            }
+
+            console.log('scroll to next');
+            animating = true;
+
+            indicators[currentIndex].classList.remove('active');
+            sliderItems[currentIndex].classList.remove('active');
+
+            currentIndex = nextIndex;
+
+            indicators[currentIndex].classList.add('active');
+            sliderItems[currentIndex].classList.add('active');
+
+            const ct = currentItem.getBoundingClientRect(); // TODO: This can be a const if not autoheight.
+            topOffset += scrollUp ? -ct.height : ct.height;
+            container.style.transform = `translateY(${topOffset}px)`;
+        });
+
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            scrollHandler(e.wheelDelta < 0);
+        });
+    </script>
+</body>
+
+</html>
