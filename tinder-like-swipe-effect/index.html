@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Swipe</title>
+  <link rel="stylesheet" href="swipe.css" media="screen">
+  <style>
+    *,
+    *::after,
+    *::before {
+      box-sizing: border-box;
+    }
+    
+    body {
+      min-height: 100vh;
+      /*position: relative;*/
+    }
+    
+    .pic:last-child {
+      /*position: sticky;*/
+      /*top: 50vh;*/
+    }
+  </style>
+</head>
+
+<body>
+  <section id="main">
+    <section class="img-view">
+      <div class="pic"><img></div>
+      <div class="pic"><img></div>
+    </section>
+    <section class="operation-view">
+    </section>
+    <!-- <section class="detail-view">
+        <section class="img-view">
+        </section>
+        <section class="operation-view">
+        </section>
+      </section> -->
+  </section>
+  <script src="RecycleBin.js" charset="utf-8"></script>
+  <script src="swipe.js" charset="utf-8"></script>
+</body>
+
+</html>
