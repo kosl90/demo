@@ -2,6 +2,6 @@
 
 # TODOs
 
-[ ] fullscreen slide
-[ ] fullpage.js
-[ ] tinder like app
+- [ ] fullscreen slide
+- [ ] fullpage.js
+- [ ] tinder like app
